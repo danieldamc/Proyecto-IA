@@ -2,4 +2,6 @@
 
 * Daniel Martinez Castro  
 * 201973508-k  
-* Paralelo 200
+* Paralelo 200  
+
+Metodo de resolucion: BT
