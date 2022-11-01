@@ -132,7 +132,7 @@ void bt_solver(int **X, int **M, int *S, int *C,int *P, int *Q, int *N, int *D, 
 			if(D[i] != 0){
 				D[i]--;
 				S[profundidad] = N[i];
-				alter_column(X, M, profundidad, S[profundidad], nOpciones);
+				alter_column(X, M, profundidad, S[profundidad], nOpciones); //intento de optimizacion
 				bt_solver(X, M, S, C, P, Q, N, D, profundidad+1, nAutos, nClases, nOpciones, initTime, oFilename);
 				D[i]++;
 			}
@@ -213,26 +213,5 @@ int main(int argc, char** argv){
 	// ---- min ---
 	// TODO: si el programa se termina con ctrl+c no se libera mem creo
 	// TODO: optimizar x_matrix_generator ??
-
-	//debug
-	/*
-	for (int i = 0; i < nAutos; i++){
-		S[i] = 5;
-	}
-	X_matrix_generator(X, M, S, nAutos, nOpciones);
-	int nvi = violations(X, P, Q, nAutos, nOpciones);
-	printf("%d\n", nvi);
-	for (int i = 0; i < nOpciones; i++){
-		for (int j = 0; j < nAutos; j++){
-			printf("%d ", X[i][j]);
-		}
-		printf("\n");	
-	}
-
-	for (int i = 0; i < nClases; i++){
-		printf("%d", N[i]);
-	}
-	*/
-
 	return 0;
 }
