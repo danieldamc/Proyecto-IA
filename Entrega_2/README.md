@@ -19,16 +19,19 @@ Para ejecutar el progama se utiliza:
 ```bash
 make run ARGS="<testfile>"
 ```
-en donde <testfile> corresponde al archivo de entrada. Por ejemplo para ejecutar el programa con un archivo llamado test.txt se utilizaria, NOTESE que el .txt no se introduce:
+en donde testfile corresponde al archivo de entrada. Por ejemplo para ejecutar el programa con un archivo llamado test.txt se utilizaria:
 ```bash
 make run ARGS="test"
 ```
+NOTESE que el .txt no se introduce, en esta entrega se agrega una instancia llamada test.txt a modo de ejemplo.
 ### Clean
 Para eliminar los archivos generados por la compilacion y ejecucion se utiliza:
-```bash
+```
 make clean
 ``` 
 ## Consideraciones
+Se añade una instancia llamada test.txt esta es una instancia simple que puede resolver el algoritmo, esta instancia es la que se ocupa como ejemplo en la mayoria de la literatura acerca de este problema.
+
 Como se explicita en la presentacion del problema el output debe contener las numero de violaciones a cada una de las opciones por lo tanto se asume que el algoritmo debe guardar una solucion candidata en el caso de que no encuentre solucion, lo cual obliga a relajar la restriccion de capacidad de las estaciones de trabajo, por lo tanto obligando al programa a recorrer todo el espacio de busqueda haciendo el programa extremadamente impractico para instancias del problema con un numero de autos mayor a 20, instancias de este tamaño o mas grande pueden llevar meses o incluso años en ejecutarse.  
 
 Este programa retorna la primera solucion que encuentra, o la con menos violaciones en el caso de que no exista una solucion.  
