@@ -1,0 +1,159 @@
+\documentclass[letter, 10pt]{article}
+\usepackage[latin1]{inputenc}
+%%\usepackage[spanish]{babel}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage[dvips]{graphicx}
+\usepackage{url}
+\usepackage[top=3cm,bottom=3cm,left=3.5cm,right=3.5cm,footskip=1.5cm,headheight=1.5cm,headsep=.5cm,textheight=3cm]{geometry}
+
+
+\begin{document}
+\title{Inteligencia Artificial \\ \begin{Large}Informe 2: Problema Car Sequencing (CS)\end{Large}}
+\author{Daniel Alejandro Mart\'inez Castro}
+\date{\today}
+\maketitle
+
+
+%--------------------No borrar esta secci\'on--------------------------------%
+\section*{Evaluaci\'on}
+
+\begin{tabular}{ll}
+Mejoras 1ra Entrega (20\%): &  \underline{\hspace{2cm}}\\
+C\'odigo Fuente (10\%): &  \underline{\hspace{2cm}}\\
+Representaci\'on (15\%):  & \underline{\hspace{2cm}} \\
+Descripci\'on del algoritmo (30\%):  & \underline{\hspace{2cm}} \\
+%Experimentos (10\%):  & \underline{\hspace{2cm}} \\
+%Resultados (10\%):  & \underline{\hspace{2cm}} \\
+Conclusiones (20\%): &  \underline{\hspace{2cm}}\\
+Bibliograf\'ia (5\%): & \underline{\hspace{2cm}}\\
+ &  \\
+\textbf{Nota Final (100)}:   & \underline{\hspace{2cm}}
+\end{tabular}
+%---------------------------------------------------------------------------%
+
+\begin{abstract}
+Car Sequencing Problem (CS) es un problema en el que se ordenan autos en una l\'inea de producci\'on, con el fin de instalar opciones, estas se instalan en estaciones de trabajo las cuales tienen una capacidad definida, cada auto pertenece a una clase la cual tiene un set de opciones predefinido y una demanda. El objetivo de este problema para una instancia es encontrar una secuencia que sea factible o declarar la instancia como sin soluci\'on, aunque, existen enfoques que permiten que se presente como soluci\'on la que cometa menos errores. En este escrito se explica el problema en detalle para luego mostrar las diferentes aproximaciones que se han realizado a este problema con el pasar del tiempo, luego se expone un modelo matem\'atico, despu\'es se implementa un algoritmo de resoluci\'on del problema usando backtracking para finalmente concluir acerca de este algoritmo. 
+\end{abstract}
+
+\section{Introducci\'on}
+Car sequencing problem (CS) es un problema en el que se busca ordenar una cantidad de autos de diferentes clases en una l\'inea de producci\'on para satisfacer la demanda, cada auto tiene asociada una clase la cual tiene definida un set opciones que se le deben instalar en diferentes estaciones de trabajo, estas estaciones tienen una capacidad asociada.\\\\
+El CS es considerado un CSP donde las soluciones son del tipo SI/NO. SI en el caso que se ha encontrado una soluci\'on posible que satisface las capacidades de las estaciones y No en el caso contrario, aunque tambi\'en existen modelos que permiten que una restricci\'on pueda ser violada en este caso se usa como soluci\'on la que tenga la menor cantidad de violaciones.
+\\\\
+Este problema es de particular inter\'es para la industria automotriz por sus amplias aplicaciones pr\'acticas, debido a que la industria se encuentra en crecimiento constante y en esta ocurren cambios mayores cada muy poco tiempo, como lo son los cambios tecnol\'ogicos, adem\'as de que se manejan procesos muy complejos por lo que se hace necesario tener un m\'etodo para poder organizar la producci\'on y con esto satisfacer la demanda cambiante de la actualidad. 
+\\\\
+Se presenta un posible algoritmo para encontrar las soluciones del CS usando backtracking el cual corresponde a una t\'ecnica completa de busca en un espacio de b\'usqueda, este algoritmo instancia todas las posibles soluciones del problema para volver atr\'as si se violan restricciones, este algoritmo retorna la primera soluci\'on encontrada o la que menos violaciones tenga en el caso de que la instancia no tenga soluci\'on.
+\\\\
+En este documento se encuentra estructurado siguiente manera, en la secci\'on 2 se define el problema, explicando sus constantes, variables y restricciones. En la secci\'on 3 se detalla el estado del arte en el cual se resume investigaciones realizada por m\'ultiples investigadores, y sus enfoques en torno a resolver el problema. En la secci\'on 4 se presenta el modelo matem\'atico general en el cual se formalizan todos los aspectos del problema. En la secci\'on 5 se presentan las representaciones de las soluciones usando un algoritmo basado en backtraking. En la secci\'on 6 se detalla la implementaci\'on de este algoritmo para finalmente concluir en la secci\'on 7.
+\section{Definici\'on del Problema}
+CS un problema en que se busca ordenar autos que tienen asociada una clase en una linea de producci\'on de autos, en la cual se le deben instalar un set de opciones a cada clase de autos, para instalar estas opciones se tiene estaciones de trabajo, una por cada opci\'on, las que tienen una capacidad definida. El objetivo de este problema es minimizar la cantidad de violaciones de capacidad de las estaciones satisfaciendo la demanda de cada una de las clases de autos \cite{Dincbas}. 
+\\\\ 
+Para la resoluci\'on de CS normalmente se usan 3 restricciones:
+\begin{enumerate}
+    \item Satisfacer la demanda de todas las clases.
+    \item No sobrepasar la capacidad de una estaci\'on de trabajo en ninguna ventana de tiempo.
+    \item Asociar los autos que una clase en un slot definido con las opciones que se instalan en \'el.
+\end{enumerate}
+ La primera y tercera restricci\'on son duras por lo que se deben cumplir en todas las instancias del problema, en cambio la segunda restricci\'on es blanda por lo que puede ser violada, pero manteniendo estas violaciones en lo m\'as m\'inimo posible.
+\\\\
+Las constantes para la resoluci\'on de este problema consisten en el n\'umero de opciones, n\'umero de clases, cantidad de autos totales a fabricar, demanda de cada una de las clases, set de opciones que se le deben instalar a cada clase y capacidad de las estaciones de trabajo la cual se representa de manera porcentual por otro lado las variables de este problema consisten en una lista $S$ en la cual cada slot representa una clase de auto que se fabricara en ese intervalo de tiempo, y una matriz $X$ en la cual las columnas representan las opciones que se le instalan a un auto en un intervalo de tiempo. 
+\\\\
+Este problema se ha probado ser NP-duro por Kis \cite{Tamas}, lo que significa que puede que no se pueda resolver con algoritmos en tiempo polinomial. El espacio de b\'usqueda corresponde a todas las posibles permutaciones de diferentes clases de veh\'iculos, pero la dificultad no solo depende del espacio de b\'usqueda, sino tambi\'en de la tasa de uso de cada una clase de auto, debido a mientras m\'as se use una clase de auto m\'as dif\'icil es que se cumpla con la restricci\'on de capacidad de las estaciones de trabajo \cite{Lin}. 
+\\\\ 
+Existen m\'ultiples variantes del CS, las cuales expanden el caso base usando demanda parcial incierta para resolver el problema, a\~{n}adiendo as\'i nuevas clases de autos con diferentes opciones a las ya definidas las cuales requieren estaciones de trabajo especializadas, el objetivo de este problema adem\'as de minimizar la cantidad de errores es tambi\'en minimizar los costos que implica fabricar estos nuevos autos \cite{ESP}. Otras variaciones de este problema implican a\~{n}adir l\'ineas de producci\'on con lo cual adem\'as de los objetivos base del problema se a\~{n}ade el de balancear la carga en estas l\'ineas.
+\section{Estado del Arte}
+El problema Car sequencing Problem (CS) fue definido por primera vez en 1986 por Parello et al. \cite{Parrello}. Este problema fue definido de la misma forma que se presenta en secciones anteriores a esta, las soluciones al problemna en este modelo consisten en encontrar un orden en los autos, en donde, todas las restricciones sean satisfechas o declarar la instancia como sin soluci\'on.\\\\
+Como se expuso anteriormente este problema es NP-duro esto fue propuesto por Gent \cite{Gent99} y luego comprobado por Kis \cite{Tamas}, por lo tanto esto significa que no exite un algoritmo que pueda solucionar el problema en tiempo polinomial.\\\\
+En 1994 Hindi y Ploszaski  \cite{Hindi} desarrollaron un algoritmo greedy, es estos algoritmos se inicia con una secuencia vac\'ia y luego se le a\~{n}aden autos iterativamente en relaci\'on con una funci\'on greedy, el algoritmo cual prob\'o ser efectivo encontrando soluciones \'optimas en tiempo bajos, adem\'as pod\'ia detectar que la instancia no ten\'ia soluci\'on tambi\'en en tiempos bajos en la mayor\'ia de los casos. Pero para instancias grandes se concluy\'o que era necesaria la inclusi\'on de algoritmos heur\'isticos auxiliares. Este trabajo ciment\'o las bases para las investigaciones futuras sobre el tema. 
+\\\\
+En 1995 Warwick et al.\cite{Warwick} propuso un Genetic Algorithm (GA) para resolver este problema. Estos consisten en t\'ecnicas que exploran el espacio de b\'usqueda mediante una simulaci\'on de evoluci\'on, esto se logra combinando estructuras de datos que obtuvieron buen rendimiento minimizando o maximizando la funci\'on objetivo, las soluciones de algoritmos GA convergen a valores cercanos a soluciones \'optimas. \\\\
+La mayor\'ia de los trabajos que resuelven el CS usando Constraint Programing consideran el resultado final una soluci\'on o indican que la instancia no tiene soluci\'on ya que todas las restricciones se deben cumplir para que una soluci\'on candidata se considere soluci\'on final, por lo tanto, es un modelo exacto. En 2001 Bergen et al. \cite{Bergen} propuso un modelo que incluye tanto restricciones duras como restricciones blandas, el cual funcionaba bien con instancias peque\~{n}as, pero
+se quedaba atr\'as con instancias m\'as grandes o complejas. Desde este punto de vista despu\'es se desarrollaron algoritmos usando heur\'isticas de ordenamiento con el fin de reducir el espacio de b\'usqueda, estos acercamientos ponen las clases de autos m\'as dif\'icil o con m\'as demanda al principio de la secuencia para as\'i trabajar en base a ellos.\\\\
+Solnon en 2001 \cite{Solnon01} propuso un algoritmo Ant Colony Optimization (ACO) para CSP. En el cual se utiliza el comportamiento de las hormigas con el fin de encontrar una soluci\'on, estas hormigas forman una soluci\'on dejando un rastro de feromonas que luego iterativamente las hormigas posteriores siguen para mejorar la soluci\'on, estas feromonas eventualmente se evaporan. Este algoritmo se ha mejorado con el tiempo incluyendo t\'ecnicas de Local Search y Greedy Heuristics \cite{Lin}.\\\\
+M\'ultiples algoritmos de Local Search (LS) se han planteado algunos m\'as centrados en CS que otros, esto algoritmos inician con una soluci\'on candidata y luego iterativamente se mueven hacia una soluci\'on vecina de la inicial, soluci\'on vecina es un set de soluciones potenciales que var\'ian de la soluci\'on actual por lo m\'inimo posible un ejemplo de esto es Puchta y Gottlieb \cite{Puchta02} en 2002. En 2003 Puchta y Gottlieb \cite{Puchta03} compararon los rendimientos de algoritmos LS y ACO para este problema, en estas pruebas los algoritmos que usan ACO se mostraron levemente superiores a los que usan LS para instancias grandes del problema, pero los autores recalcan que con mejoras LS puede mejorar. En 2008 Fliedner and Boysen \cite{Fli} desarrollaron un algoritmo Branch and Bound exacto, este explota los aspectos estructurales del CS para as\'i reducir la complejidad del problema.
+\\\\
+Las tendencias actuales sobre la investigaci\'on del CS m\'as que continuar desarrollando t\'ecnicas m\'as eficientes son de expandir el modelo para poder as\'i usarlo en casos m\'as espec\'ificos de CS, como lo son a\~{n}adir m\'ultiples l\'ineas de producci\'on o incluir demanda parcial o incierta en el modelo para as\'i asimilarlo m\'as a la realidad. Tambi\'en se est\'an haciendo estudios pr\'acticos que miden la utilidad de m\'ultiples algoritmos que usa mezclas de heur\'isticas para as\'i compararlos en estos entornos.
+\section{Modelo Matem\'atico}
+Para resolver este problema se utiliza un modelo matem\'atico que minimiza la cantidad de violaciones de capacidad de las estaciones de trabajo, para esto es necesario la restricci\'on ligada a la capacidad sea blanda. Para la creaci\'on de este modelo se us\'o el trabajo de Dincbas \cite{Dincbas} para el planteo de las restricciones, y el de Lin para la funci\'on objetivo \cite{Lin}. Considerando las opciones $o$, n\'umero de autos a producir $j$ y que existen $k$ clases de autos.
+\subsection{Constantes}
+\begin{itemize}
+    \item $D[k]$ = demanda de autos de clase $k$.
+    \item $P[i]$ = m\'aximo n\'umero de autos que un bloque permite para cada opci\'on $i$.
+    \item $Q[i]$ = tama\~{n}o del bloque para cada opci\'on $i$.
+    \item $M[i][k]$ = 1, si la clase $k$ necesita la opci\'on $i$. 0, caso contrario.
+    \item C = \{1, 2, ..., k\}, O = \{1, 2, ..., i\}, N = \{1, 2, ..., j\}, n = total de autos a producir.
+\end{itemize}
+
+\subsection{Variables}
+\begin{itemize}
+
+    \item $S[j]$ = clase de auto $k$ asignado al slot $j$.
+    \item $X[i][j]$ = 1, si el auto clase $k$ en en slot $j$ tiene instalada la opci\'on $i$. 0, caso contrario.
+\end{itemize}
+
+\subsection{Funci\'on Objetivo}
+
+\begin{equation}
+    min\sum_{i \in O}^{}\sum_{j \in N}^{} X[i][j] \cdot max\{\sum_{j'=j}^{min\{j+Q[i]-1,n\}} X[i][j'] - P[i], 0\}
+\end{equation}
+Esta funci\'on objetivo minimiza la cantidad de violaciones en relaci\'on con la restricci\'on de capacidad de las estaciones de trabajo. para esto se crea una ventana de tama\~{n}o $Q[i]$ la cual se va moviendo por la l\'inea de producci\'on revisando que la cantidad de veces que se instala la opci\'on $i$ en esa ventana sea menor o igual a $P[i]$, para luego sumar todas las violaciones de cada una de las opciones. 
+\subsection{Restriciones}
+\begin{equation}
+     \sum_{j'=j}^{min\{j+Q[i]-1,n\}} X[i][j'] \leq P[i],\forall j \in N,\forall i \in O
+\end{equation}
+\begin{equation}
+     \sum_{i \in N} max\{-1*(|S[i] - k| - 1), 0\} = D[k],\forall k \in C
+\end{equation}
+\begin{equation}
+    M[i][S[j]] = X[i][j], \forall j \in N, \forall i \in O
+\end{equation}\newline
+La inecuaci\'on 2 corresponde a la restricci\'on de capacidad, esta crea una ventana de largo $Q[i]$ en una de las opciones $i$ de $O   $, contando la cantidad de veces que se instala esta opci\'on en esta ventana, esta cantidad tiene que ser menor o igual a $P[i]$ para as\'i estar cumpliendo la capacidad de la m\'aquina que instala la opci\'on $i$, esta ventana se va moviendo hasta que no hay m\'as autos, para luego revisar lo explicado anteriormente con las siguientes opciones. La ecuaci\'on 3 corresponde a la restricci\'on que asegura que se cumpla la demanda para cada una de las clases, esta restricco\'on b\'asicamente cuenta la cantidad de ocurrencias de $k$ en $S$, $\forall k \in C$, y revisa que sea igual a $D[k]$. La ecuaci\'on 4 representa la restricci\'on de liga las opciones de un auto que se produce en el slot $S[j]$ a la matriz $X[i][j]$. Por lo tanto si un veh\'iculo clase $k$ se produce en un slot $j$ y esa clase necesita la opci\'on $M[i][k]$, esta opci\'on debe estar en $X[i][j]$.
+\section{Representaci\'on}
+Para la resoluci\'on del problema se definieron estructuras id\'enticas a las se\~{n}aladas en el modelo matem\'atico del CS, las cuales son los arrays; S[nAutos]; D[nClases]; P[nOpciones]; Q[nOpciones]; M[nClases][nOpciones]; X[nAutos][nOpciones]. Los arrays D, P, Q y M son llenados con el archivo que contiene la instancia a solucionar, X se utiliza internamente para verificar la factibilidad de una instancia de S y S se utiliza para guardar la combinaci\'on actual de autos que se est\'a probando, finalmente esta es la estructura que se retorna en el caso de encontrar una soluci\'on.\\\\
+La instanciaci\'on de variables dentro de S donde el orden de inserci\'on es de menor a mayor \'indice en S y el orden de instanciaci\'on en cada slot de S es el mismo que aparece en el archivo que contiene la instancia del problema. Por ejemplo: si se tiene; $D[5] = \{1, 1, 2, 2, 2, 2\}$; $S[10] = \{0, 1, 2, 2, 3, 3\}$. La siguiente variable en instanciarse corresponde a S[7] con lo cual se tendr\'ia $S = \{0, 1, 2, 2, 3, 3, 0\}$, pero como esto no es factible ya que se trasgrede la restricci\'on de demanda por lo que se continua instanciando hasta llegar a un n\'umero factible $S = \{0, 1, 2, 2, 3, 3, 4\}$ en este caso.\\\\
+Como se puede notar con el p\'arrafo anterior y lo dicho en secciones anteriores para esta representaci\'on la restricci\'on tanto de Capacidad como de Uni\'on son Duras, lo que quiere decir que bajo ning\'un motivo se pueden trasgredir, en cambio, la restricci\'on de Capacidad es Blanda lo que permite guardar soluciones no optimas de una instancia, esto aumenta el espacio de b\'usqueda en comparaci\'on a un algoritmo que retorne SI/NO si existe una soluci\'on factible.\\\\
+El espacio de b\'usqueda de esta representaci\'on corresponde a exactamente lo comprobado por Kis \cite{Tamas} lo cual corresponde a:
+\begin{equation}
+    \frac{|D|!}{|D[1]|!\cdot|D[2]|!\cdot...\cdot|D[k]|!}\hspace{20pt}k \in C 
+\end{equation}
+por lo tanto en el ejemplo anterior en el que $D = \{1,1,2,2,2,2\}$ el espacio de busqueda corresponde a: $\frac{3628800}{1\cdot1\cdot2\cdot2\cdot2\cdot2} = \frac{3628800}{16} = 226800$. Como se puede observar en el numerador de (5) existe un factorial del la cantidad de autos total a producir por lo que el espacio de busqueda crece extremadamente r\'apido al aumentar la cantidad de autos a producir.\\\\
+En el caso de que una instancia tenga m\'ultiples soluciones al no tener forma de compararlas en t\'erminos de calidad, la soluci\'on elegida para como oficial es la primera que se encuentra para as\'i reducir tiempo de computaci\'on. Y en el caso de que una instancia no tenga soluci\'on se entrega la secuencia de S que tenga la menor cantidad de violaciones de capacidad de las estaciones de trabajo.
+\section{Descripci\'on del algoritmo}
+Para la implementaci\'on del algoritmo de resoluci\'on del CS utilizando backtracking se utilizar\'a el lenguaje de programaci\'on C, debido a la simpleza de este lenguaje en comparaci\'on con otros y por contar con funcionalidades \'utiles en este algoritmo. La idea b\'asica de este algoritmo es generar secuencias v\'alidas de S que cumplan con la restricci\'on de demanda para luego comprobar si cumple las otras restricciones, en el caso de que no se cumplan se vuelve atr\'as para cambiar secuencialmente variables de S anteriormente instanciadas, hasta recorrer todo el espacio de b\'usqueda o encontrar una soluci\'on.
+\begin{algorithm}[H]
+\caption{Backtracking solver}\label{alg:cap}
+\begin{algorithmic}[1]
+\Function {bt\_solver}{$S, D, P, Q,profundidad, nAutos, nClases, nOpciones$}
+\If{$profundidad = nAutos$}
+    \State $nViolations \gets calculate\_violations(S, P, Q, nAutos, nOpciones)$
+    \If{$nViolations = 0$}
+        \State $solution \gets S$
+        \State $end \hspace{2pt}execution$
+    \EndIf
+\Else
+    \For{$i \gets 0; i < nClases; i \gets i + 1$ }
+    \If{$D[i] \neq 0$}
+        \State $D[i] \gets D[i] - 1$ 
+        \State $S[profundidad] \gets i$
+        \State $BT\_SOLVER(S, D,P,Q, profundidad + 1, nAutos, nClases,nOpciones)$
+        \State $D[i] \gets D[i] + 1$ 
+    \EndIf
+    \EndFor
+\EndIf
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+Como se puede ver en el seudoc\'odigo del algoritmo se utiliza recursi\'on para implementar el backtracking, lo que junto a los punteros en C permiten un manejo \'optimo de memoria y m\'inimos cambios de valor de variables dentro de las estructuras que se utilizan para probar la factibilidad de instancias. En cuanto al manejo de las restricciones en el c\'odigo; para la primera restricci\'on (Demanda) antes de instanciar una clase en un slot de la estructura S se verifica que exista demanda para esta clase as\'i evitando generar instancias imposibles de S con lo cual se reduce la cantidad de verificaciones de esta restricci\'on a futuro, esto se realiza en la l\'inea 10 del seudoc\'odigo con un simple \textit{if}; por otro lado para las otras dos restricciones (Capacidad, Uni\'on) estas se comprueban dentro de la funci\'on \textit{calculate\_violations()}, la cual construye la matriz X a partir de S y M cuando S se tiene todos los slots ocupados por una clase para despu\'es usar esta matriz para contar el n\'umero de violaciones de cada una de las estaciones de trabajo en esta instancia S, para finalmente sumar todas estas para obtener el total de violaciones de esta instancia S, se puede apreciar que cuando el n\'umero que retorna esta funci\'on es 0 significa que S es una instancia que no viola ninguna de las restricciones por lo tanto se retorna S como soluci\'on y se finaliza la ejecuci\'on del programa.\\\\
+Debido a la estructura de las soluciones se implement\'o un mecanismo para guardar una soluci\'on alternativa en el caso de que no existan soluciones de la instancia del problema, para esto cada vez que se verifica una instancia S con \textit{calculate\_violations()} se compara lo que retorna con el menor valor obtenido en verificaciones anteriores, si es menor esta instancia se guarda como la \'optima, en el caso contrario no se hace nada. Esto no se expone en el seudoc\'odigo ya que a\~{n}ade complejidad innecesaria.
+\section{Conclusiones}
+A lo largo de este escrito se estudi\'o el Car sequencing Problem (CS), problema de vital importancia para la industria manufacturera de autom\'oviles ya que este permite optimizar el tiempo en el cual se fabrican autos lo que permite fabricar m\'as autos y por lo tanto obtener m\'as ganancias, se present\'o una definici\'on de este problema junto con todas las variables que influyen en la resoluci\'on de este, para despu\'es analizar la evoluci\'on de las t\'ecnicas para la resoluci\'on de este problema las cuales a un inicio ten\'ian un enfoque general para problemas de satisfacci\'on de restricciones, para despu\'es evolucionar a algoritmos m\'as complejos con el uso de heur\'isticas que reducen el espacio de b\'usqueda con el fin de especializarse en este problema, m\'as tarde se present\'o un modelo matem\'atico y finalmente una representaci\'on del problema con un algoritmo propuesto para la resoluci\'on de este problema.\\\\
+A pesar de los fuertes avances a de finales de la d\'ecada de los 90 e inicios de la primera d\'ecada de los a\~{n}os 2000, el problema ha sufrido una disminuci\'on de los avances a partir finales de la d\'ecada de los a\~{n}os 2000. Los focos principales de desarrollo a futuro son el uso de greedy algorithms suplementado con heur\'isticas como Local Search (LS) y Ant Colony Optimization (ACO), adem\'as de la focalizaci\'on del problema para instancias m\'as espec\'ificas del problema, haci\'endolo as\'i, m\'as similar a las condiciones que se presentan en la realidad.\\\\
+Se implemento una propuesta de soluci\'on en el lenguaje de programaci\'on C utilizando backtracking recursivo para la resoluci\'on del CS, haciendo las restricciones de demanda y uni\'on duras, y la restricci\'on de capacidad blandas. Todo esto para poder conseguir soluciones alternativas en caso de instancias del problema sin soluci\'on. Para instancias peque\~{n}as de ordenes entre 10 y 30 autos a producir al algoritmo entrega resultados en tiempos aceptables, pero al aumentar la cantidad de autos a producir el tiempo de ejecuci\'on aumenta enormemente. Esto debido a la naturaleza del espacio de b\'usqueda este algoritmo es extremadamente ineficiente, ya que, incluso con instancias relativamente peque\~{n}as con una cantidad total de autos a producir de 100, el espacio de b\'usqueda es enorme, por lo que para instancias con cantidad de autos mayor a 30 no se recomienda usar esta t\'ecnica de resoluci\'on.\\\\
+De cara a versiones futuras del algoritmo propuesto se tienen 2 opciones para mejorarlo; la primera opci\'on ser\'ia eliminar que se guarde una soluci\'on alternativa en el caso de que una instancia no tenga soluciones haciendo con esto la restricci\'on de capacidad dura, por lo tanto esta se revisar\'ia cada vez que se instancia una variable con lo que las soluciones de una instancia serian de car\'acter SI/NO; La segunda es seguir con el modelo actual de guardar una soluci\'on alternativa pero revisando la restricci\'on de capacidad de manera m\'as frecuente as\'i se lograr\'ia comparar instancias parciales que pueden tener m\'as violaciones que otras ya revisadas, con lo que esta instancia se podr\'ia descartar y hacer backtracking inmediatamente.
+\section{Bibliograf\'ia}
+\bibliographystyle{plain}
+\bibliography{Referencias}
+
+\end{document} 
