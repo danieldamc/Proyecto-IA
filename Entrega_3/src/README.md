@@ -1,4 +1,4 @@
-# Entrega 2 - Proyecto Inteligencia Artificial
+# Entrega 3 - Proyecto Inteligencia Artificial
 ## Car sequencing problem (CS) - Backtracking
 
 Nombre: Daniel Martinez Castro  
